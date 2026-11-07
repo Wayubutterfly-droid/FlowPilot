@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI办公流程助手</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+    <link rel="stylesheet" href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+</head>
+
+<body class="m-0 p-0">
+
+    <div class="layout-root">
+
+        <!-- 侧边栏 -->
+        <nav class="sidebar">
+            <!-- Logo -->
+            <div class="p-4 border-b border-gray-700">
+                <a href="#" class="flex items-center text-white">
+                    <i class="fas fa-robot text-2xl"></i>
+                    <span class="ml-3 font-bold text-lg">AI流程助手</span>
+                </a>
+            </div>
+
+            <!-- 菜单 -->
+            <ul class="py-4">
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white border-l-4 border-transparent">
+                        <i class="fas fa-home w-6 text-center"></i>
+                        <span class="ml-3">首页</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white border-l-4 border-transparent">
+                        <i class="fas fa-th-large w-6 text-center"></i>
+                        <span class="ml-3">场景库</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-white bg-gray-700 border-l-4 border-blue-500">
+                        <i class="fas fa-info-circle w-6 text-center"></i>
+                        <span class="ml-3">关于</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white border-l-4 border-transparent">
+                        <i class="fas fa-book w-6 text-center"></i>
+                        <span class="ml-3">帮助</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+
+            <!-- 顶部搜索栏 -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex-1 max-w-lg">
+                    <div class="relative">
+                        <input type="search" placeholder="搜索场景..."
+                            class="w-full bg-white border border-gray-200 rounded-lg py-2.5 px-4 pl-10 text-sm">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="flex items-center ml-4">
+                    <button onclick="openAISettings()"
+                        class="flex items-center mr-4 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:border-blue-400 transition">
+                        <span id="aiStatusDot" class="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>
+                        <span id="aiStatusText" class="text-gray-600">模型设置</span>
+                    </button>
+                    <span class="text-gray-500 text-sm mr-3">Admin</span>
+                    <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页面标题 -->
+            <div class="page-header">
+                <h1 class="text-2xl font-bold text-white">AI办公流程助手</h1>
+                <p class="text-blue-200 text-sm mt-1">输入任务，快速生成SOP与模板</p>
+            </div>
+
+            <!-- 搜索框区域 -->
+            <div class="card">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="taskInput" placeholder="例如：新员工入职准备、组织培训、采购办公用品"
+                        class="flex-1 px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button onclick="generateSOP()" id="generateBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg transition flex items-center justify-center min-w-40">
+                        <i class="fas fa-magic mr-2"></i>
+                        <span id="btnText">生成SOP</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 场景卡片（由 SCENARIOS 配置动态渲染） -->
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-800">常用场景</h2>
+                <button onclick="openScenarioModal()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-plus mr-2"></i>新建场景
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6" id="scenarioCards"></div>
+
+            <!-- 统计图表 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 mb-4">使用统计</h3>
+                    <canvas id="chart1" height="150"></canvas>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 mb-4">场景分布</h3>
+                    <canvas id="chart2" height="150"></canvas>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 mb-4">月活跃度</h3>
+                    <canvas id="chart3" height="150"></canvas>
+                </div>
+            </div>
+
+            <!-- 结果区域 -->
+            <div id="resultSection" class="hidden">
+                <div class="card">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b">
+                        <div class="flex items-center">
+                            <button onclick="goBack()" class="text-gray-500 hover:text-gray-700 mr-4">
+                                <i class="fas fa-arrow-left text-xl"></i>
+                            </button>
+                            <h2 class="text-xl font-bold text-gray-800" id="resultTitle">任务结果</h2>
+                        </div>
+                        <button onclick="exportToPrint()" class="bg-white hover:bg-gray-100 text-gray-800 px-4 py-2 rounded-lg text-sm mr-2">
+                            <i class="fas fa-file-alt mr-2"></i>导出为打印文档
+                        </button>
+                        <button onclick="goBack()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm">
+                            <i class="fas fa-arrow-left mr-1"></i> 返回
+                        </button>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row gap-6">
+                        <!-- 左侧概览 -->
+                        <div class="w-full lg:w-1/3">
+                            <div class="bg-gray-50 rounded-lg p-6">
+                                <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">任务概览</h3>
+                                <div class="space-y-4">
+                                    <div class="border-l-4 border-blue-500 pl-3">
+                                        <p class="text-xs text-gray-500">目标</p>
+                                        <p class="font-bold text-gray-800" id="overviewGoal">-</p>
+                                    </div>
+                                    <div class="border-l-4 border-purple-500 pl-3">
+                                        <p class="text-xs text-gray-500">节点构成</p>
+                                        <p class="font-bold text-gray-800 text-sm" id="overviewTypes">-</p>
+                                    </div>
+                                    <div class="border-l-4 border-green-500 pl-3">
+                                        <p class="text-xs text-gray-500">步骤数</p>
+                                        <p class="font-bold text-gray-800" id="overviewSteps">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 右侧内容 -->
+                        <div class="w-full lg:w-2/3 space-y-6">
+                            <!-- SOP流程 -->
+                            <div class="card mb-0">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-bold text-gray-800">
+                                        <i class="fas fa-stream text-blue-600 mr-2"></i>SOP流程
+                                    </h3>
+                                    <button onclick="copyContent('sop')" class="text-blue-600 text-sm">
+                                        <i class="fas fa-copy mr-1"></i>复制
+                                    </button>
+                                </div>
+
+                                <!-- 进度指示器 -->
+                                <div class="mb-6">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>进度</span>
+                                        <span id="progressText">0/6 已完成</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div id="progressFill" class="progress-fill" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <div id="sopTimeline" class="space-y-3"></div>
+                            </div>
+
+                            <!-- 模板字段 -->
+                            <div class="card mb-0" id="templateCard">
+                                <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                                    <h3 class="font-bold text-gray-800">
+                                        <i class="fas fa-table text-green-600 mr-2"></i>模板字段
+                                    </h3>
+                                    <button onclick="copyContent('template')" class="text-blue-600 text-sm">
+                                        <i class="fas fa-copy mr-1"></i>复制
+                                    </button>
+                                </div>
+                                <table class="w-full text-sm">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left">字段名称</th>
+                                            <th class="px-4 py-2 text-left">类型</th>
+                                            <th class="px-4 py-2 text-left">必填</th>
+                                            <th class="px-4 py-2 text-left">说明</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="templateBody"></tbody>
+                                </table>
+                            </div>
+
+                            <!-- 沟通文案 -->
+                            <div class="card mb-0" id="messageCard">
+                                <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                                    <h3 class="font-bold text-gray-800">
+                                        <i class="fas fa-comments text-purple-600 mr-2"></i>沟通文案
+                                    </h3>
+                                    <button onclick="copyContent('messages')" class="text-blue-600 text-sm">
+                                        <i class="fas fa-copy mr-1"></i>复制
+                                    </button>
+                                </div>
+                                <div id="messageContent" class="space-y-3"></div>
+                            </div>
+
+                            <!-- 风险提醒 -->
+                            <div class="card mb-0" id="riskCard">
+                                <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                                    <h3 class="font-bold text-gray-800">
+                                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>风险提醒
+                                    </h3>
+                                    <button onclick="copyContent('risks')" class="text-blue-600 text-sm">
+                                        <i class="fas fa-copy mr-1"></i>复制
+                                    </button>
+                                </div>
+                                <div id="riskContent" class="space-y-2"></div>
+                            </div>
+
+                            <!-- 复盘建议 -->
+                            <div class="card mb-0" id="reviewCard">
+                                <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                                    <h3 class="font-bold text-gray-800">
+                                        <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>复盘建议
+                                    </h3>
+                                    <button onclick="copyContent('review')" class="text-blue-600 text-sm">
+                                        <i class="fas fa-copy mr-1"></i>复制
+                                    </button>
+                                </div>
+                                <div id="reviewContent" class="text-gray-600 text-sm whitespace-pre-line"></div>
+                            </div>
+                        </div>
+
+                        <!-- 修正反馈 -->
+                        <div class="card mb-0 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
+                            <h3 class="font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fas fa-pen-alt text-blue-600 mr-2"></i>修正反馈
+                            </h3>
+                            <textarea id="feedbackInput" rows="3" placeholder="描述你觉得当前SOP需要优化的地方，例如：步骤太少、缺少XX内容、描述不够详细……" class="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm mb-3"></textarea>
+                            <button onclick="submitFeedback()" id="feedbackBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg text-sm">
+                                <i class="fas fa-sync-alt mr-2"></i><span id="feedbackBtnText">重新生成（基于反馈优化）</span>
+                            </button>
+                            <div id="feedbackLoading" class="hidden mt-3 p-3 bg-blue-100 rounded-lg text-blue-700 text-sm">
+                                <i class="fas fa-spinner fa-spin mr-2"></i>正在根据反馈优化SOP…
+                            </div>
+                        </div>
+
+                        <!-- 迭代记录 -->
+                        <div class="card mb-0">
+                            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                                <h3 class="font-bold text-gray-800">
+                                    <i class="fas fa-history text-purple-600 mr-2"></i>迭代记录
+                                </h3>
+                                <button onclick="toggleIterationHistory()" class="text-gray-500 text-sm">
+                                    <span id="iterationToggleText">展开</span> <i class="fas fa-chevron-down ml-1"></i>
+                                </button>
+                            </div>
+                            <div id="iterationHistoryContent" class="hidden">
+                                <div id="iterationHistoryList" class="space-y-2 text-sm"></div>
+                                <button onclick="clearIterationHistory()" class="text-red-500 text-xs mt-2">清空记录</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 新建场景弹窗 -->
+    <div id="scenarioModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b sticky top-0 bg-white">
+                <h3 class="text-lg font-bold text-gray-800">新建自定义场景</h3>
+                <button onclick="closeScenarioModal()" class="text-gray-400 hover:text-gray-600 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <!-- 基本信息 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">场景名称 <span class="text-red-500">*</span></label>
+                        <input id="m_name" type="text" placeholder="如：客户拜访" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">卡片标题</label>
+                        <input id="m_cardTitle" type="text" placeholder="显示在卡片上的标题" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">卡片描述</label>
+                        <input id="m_cardDesc" type="text" placeholder="一句话描述" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">匹配关键词（逗号分隔）<span class="text-red-500">*</span></label>
+                        <input id="m_keywords" type="text" placeholder="如：客户,拜访,回访" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">图标</label>
+                        <select id="m_icon" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="fa-tasks">fa-tasks 任务</option>
+                            <option value="fa-users">fa-users 用户</option>
+                            <option value="fa-briefcase">fa-briefcase 公文包</option>
+                            <option value="fa-calendar-alt">fa-calendar-alt 日历</option>
+                            <option value="fa-clipboard-check">fa-clipboard-check 清单</option>
+                            <option value="fa-handshake">fa-handshake 握手</option>
+                            <option value="fa-star">fa-star 星标</option>
+                            <option value="fa-cog">fa-cog 齿轮</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">主题色</label>
+                        <select id="m_color" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="blue">蓝色</option>
+                            <option value="purple">紫色</option>
+                            <option value="green">绿色</option>
+                            <option value="red">红色</option>
+                            <option value="yellow">黄色</option>
+                            <option value="indigo">靛蓝</option>
+                            <option value="pink">粉色</option>
+                            <option value="teal">青色</option>
+                            <option value="orange">橙色</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 目标 / 岗位 / 耗时 -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">目标</label>
+                        <input id="m_goal" type="text" placeholder="任务目标" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">适用岗位</label>
+                        <input id="m_role" type="text" placeholder="如：行政助理" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">预计耗时</label>
+                        <input id="m_time" type="text" placeholder="如：3-5天" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- SOP 步骤 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-medium text-gray-700">SOP 步骤</label>
+                        <button onclick="addStepRow()" type="button" class="text-blue-600 text-sm hover:text-blue-700">
+                            <i class="fas fa-plus mr-1"></i>添加步骤
+                        </button>
+                    </div>
+                    <div id="stepRows" class="space-y-2"></div>
+                </div>
+
+                <!-- 模板字段 -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-medium text-gray-700">模板字段</label>
+                        <button onclick="addFieldRow()" type="button" class="text-blue-600 text-sm hover:text-blue-700">
+                            <i class="fas fa-plus mr-1"></i>添加字段
+                        </button>
+                    </div>
+                    <div id="fieldRows" class="space-y-2"></div>
+                </div>
+
+                <!-- 沟通文案 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">沟通文案标题</label>
+                        <input id="m_msgTitle" type="text" placeholder="如：【通知】" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">沟通文案内容</label>
+                        <input id="m_msgContent" type="text" placeholder="文案内容" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- 风险 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">风险提醒（每行一条）</label>
+                    <textarea id="m_risks" rows="3" placeholder="每行一条风险点" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <!-- 复盘 -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">复盘建议</label>
+                    <textarea id="m_review" rows="2" placeholder="复盘关注点" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 px-6 py-4 border-t sticky bottom-0 bg-white">
+                <button onclick="closeScenarioModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">取消</button>
+                <button onclick="saveCustomScenarioFromForm()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-lg">保存场景</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模型设置弹窗 -->
+    <div id="aiSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between px-6 py-4 border-b">
+                <h3 class="text-lg font-bold text-gray-800">AI 模型设置</h3>
+                <button onclick="closeAISettings()" class="text-gray-400 hover:text-gray-600 text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    接入后「生成SOP / 反馈重生成」将由大模型实时生成；未接入时使用内置模板。
+                    推荐选择免费提供商，密钥仅保存在你浏览器本地（localStorage），不会上传。
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">服务商（免费）</label>
+                    <select id="ai_provider" onchange="applyProviderPreset()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="groq">Groq（速度最快，30次/分，免费免信用卡）</option>
+                        <option value="gemini">Google Gemini（额度大，~250次/天）</option>
+                        <option value="openrouter">OpenRouter（免费模型集合）</option>
+                        <option value="custom">自定义（任意 OpenAI 兼容接口）</option>
+                    </select>
+                    <p id="ai_keyLink" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API 地址 (Base URL)</label>
+                    <input id="ai_baseUrl" type="text" placeholder="https://api.groq.com/openai/v1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">模型名称 (Model)</label>
+                    <input id="ai_model" type="text" placeholder="moonshotai/kimi-k2-instruct"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                    <input id="ai_apiKey" type="password" placeholder="粘贴你的 API Key"
+                        oninput="validateKeyMatch()"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div id="ai_keyHint" class="hidden text-xs mt-1 rounded px-2 py-1"></div>
+                </div>
+
+                <div id="ai_testResult" class="hidden text-sm rounded-lg p-3"></div>
+
+                <div class="flex gap-3">
+                    <button onclick="testAIConnection()" id="aiTestBtn"
+                        class="flex-1 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-plug mr-1"></i>测试连接
+                    </button>
+                    <button onclick="saveAISettings()"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-sm">
+                        <i class="fas fa-save mr-1"></i>保存设置
+                    </button>
+                </div>
+
+                <div class="text-xs text-gray-400 border-t pt-3">
+                    免费 Key 获取：Groq → console.groq.com/keys ｜ Gemini → aistudio.google.com/apikey ｜ OpenRouter → openrouter.ai/keys
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg hidden z-50">
+        <i class="fas fa-check text-green-400 mr-2"></i>
+        <span id="toastMsg">已复制</span>
+    </div>
+
+<!-- JS 模块（按依赖顺序加载） -->
+<script src="data/builtin-scenarios.js"></script>
+<script src="data/mock-sop.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/sop.js"></script>
+<script src="js/scenarios.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+
+</html>
