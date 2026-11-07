@@ -67,11 +67,6 @@
                     </div>
                 </div>
                 <div class="flex items-center ml-4">
-                    <button onclick="openAISettings()"
-                        class="flex items-center mr-4 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm hover:border-blue-400 transition">
-                        <span id="aiStatusDot" class="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>
-                        <span id="aiStatusText" class="text-gray-600">模型设置</span>
-                    </button>
                     <span class="text-gray-500 text-sm mr-3">Admin</span>
                     <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white">
                         <i class="fas fa-user"></i>
@@ -418,74 +413,6 @@
         </div>
     </div>
 
-    <!-- 模型设置弹窗 -->
-    <div id="aiSettingsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between px-6 py-4 border-b">
-                <h3 class="text-lg font-bold text-gray-800">AI 模型设置</h3>
-                <button onclick="closeAISettings()" class="text-gray-400 hover:text-gray-600 text-xl">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="p-6 space-y-4">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    接入后「生成SOP / 反馈重生成」将由大模型实时生成；未接入时使用内置模板。
-                    推荐选择免费提供商，密钥仅保存在你浏览器本地（localStorage），不会上传。
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">服务商（免费）</label>
-                    <select id="ai_provider" onchange="applyProviderPreset()" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="groq">Groq（速度最快，30次/分，免费免信用卡）</option>
-                        <option value="gemini">Google Gemini（额度大，~250次/天）</option>
-                        <option value="openrouter">OpenRouter（免费模型集合）</option>
-                        <option value="custom">自定义（任意 OpenAI 兼容接口）</option>
-                    </select>
-                    <p id="ai_keyLink" class="text-xs text-gray-500 mt-1"></p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">API 地址 (Base URL)</label>
-                    <input id="ai_baseUrl" type="text" placeholder="https://api.groq.com/openai/v1"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">模型名称 (Model)</label>
-                    <input id="ai_model" type="text" placeholder="moonshotai/kimi-k2-instruct"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">API Key</label>
-                    <input id="ai_apiKey" type="password" placeholder="粘贴你的 API Key"
-                        oninput="validateKeyMatch()"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <div id="ai_keyHint" class="hidden text-xs mt-1 rounded px-2 py-1"></div>
-                </div>
-
-                <div id="ai_testResult" class="hidden text-sm rounded-lg p-3"></div>
-
-                <div class="flex gap-3">
-                    <button onclick="testAIConnection()" id="aiTestBtn"
-                        class="flex-1 bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold px-4 py-2 rounded-lg text-sm">
-                        <i class="fas fa-plug mr-1"></i>测试连接
-                    </button>
-                    <button onclick="saveAISettings()"
-                        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-lg text-sm">
-                        <i class="fas fa-save mr-1"></i>保存设置
-                    </button>
-                </div>
-
-                <div class="text-xs text-gray-400 border-t pt-3">
-                    免费 Key 获取：Groq → console.groq.com/keys ｜ Gemini → aistudio.google.com/apikey ｜ OpenRouter → openrouter.ai/keys
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast -->
     <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg hidden z-50">
         <i class="fas fa-check text-green-400 mr-2"></i>
@@ -496,7 +423,6 @@
 <script src="data/builtin-scenarios.js"></script>
 <script src="data/mock-sop.js"></script>
 <script src="js/store.js"></script>
-<script src="js/ai.js"></script>
 <script src="js/sop.js"></script>
 <script src="js/scenarios.js"></script>
 <script src="js/ui.js"></script>

@@ -128,11 +128,11 @@ function countStepTypes(steps) {
 }
 
 // ========== 生成请求 ==========
-// 最近一次生成数据的来源：api | ai | mock
+// 最近一次生成数据的来源：api | mock
 let LAST_SOP_SOURCE = 'mock';
 
-// 优先请求后端 /api/generate；后端不可用时降级：
-// 已配置大模型 → 前端直连大模型；否则 → mock 数据（仅用于本地预览效果）
+// 请求后端 /api/generate；后端不可用时降级为 mock 数据（仅用于未部署后端时的预览）
+// 提示词与模型调用逻辑只保留在后端，前端不内置
 async function requestGenerateSOP(task, feedback) {
     const reqBody = { task };
     if (feedback) reqBody.feedback = feedback;
@@ -156,19 +156,9 @@ async function requestGenerateSOP(task, feedback) {
         LAST_SOP_SOURCE = 'api';
         return normalizeSOPResult(data);
     } catch (apiErr) {
-        console.warn('后端接口不可用，进入降级流程：', apiErr.message);
+        console.warn('后端接口不可用，使用 mock 数据预览：', apiErr.message);
 
-        if (typeof isAIConfigured === 'function' && isAIConfigured()) {
-            try {
-                const raw = await aiGenerateSOP(task, feedback);
-                LAST_SOP_SOURCE = 'ai';
-                return normalizeSOPResult(raw);
-            } catch (aiErr) {
-                console.warn('大模型直连失败，使用 mock 数据：', aiErr.message);
-            }
-        }
-
-        // 最后兜底：mock 数据，模拟网络延迟
+        // 兜底：mock 数据，模拟网络延迟
         await new Promise(r => setTimeout(r, 600));
         LAST_SOP_SOURCE = 'mock';
         return normalizeSOPResult(getMockSOP(task, feedback));

@@ -19,8 +19,6 @@ async function generateSOP() {
         renderCurrentSOP(currentData.title || taskInput);
         if (LAST_SOP_SOURCE === 'mock') {
             showToast('当前为 mock 数据（后端 /api/generate 未就绪）');
-        } else if (LAST_SOP_SOURCE === 'ai') {
-            showToast('AI 已生成 SOP');
         } else {
             showToast('SOP 已生成');
         }
@@ -64,5 +62,4 @@ async function submitFeedback() {
     await initScenarios();
     renderScenarioCards();
     refreshCharts();
-    updateAIStatus();
 })();
